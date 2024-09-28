@@ -21,7 +21,7 @@ try:
     nltk.data.find('tokenizers/punkt_tab/english/')
 except LookupError:
     nltk.download('punkt_tab')
-
+nltk.download('punkt_tab')
 def is_url(text):
     try:
         result = urlparse(text)
