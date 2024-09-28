@@ -8,3 +8,4 @@ beautifulsoup4
 nltk
 pydantic
 groq
+lxml>=4.6.3
