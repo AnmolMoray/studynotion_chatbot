@@ -1,16 +1,26 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+import nltk
+
+# Ensure punkt_tab is downloaded
+
+
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-import nltk
+
 from urllib.parse import quote_plus, urlparse
 import nltk
 nltk.download('punkt', quiet=True)
 nltk.download('stopwords', quiet=True)
 nltk.download('averaged_perceptron_tagger', quiet=True)
 from app.config import client as groq_client
+
+try:
+    nltk.data.find('tokenizers/punkt_tab/english/')
+except LookupError:
+    nltk.download('punkt_tab')
 
 def is_url(text):
     try:
@@ -33,7 +43,7 @@ def extract_text_from_url(url):
     except Exception as e:
         return f"Error extracting text from URL: {e}"
 
-def extract_keywords(text, num_keywords=5):
+def extract_keywords(text, num_keywords=20):
     tokens = word_tokenize(text.lower())
     stop_words = set(stopwords.words('english'))
     tokens = [token for token in tokens if token.isalpha() and token not in stop_words]
@@ -129,7 +139,7 @@ def comprehensive_research(input_text):
     keywords = extract_keywords(content)
     query = " ".join(keywords)
 
-    theory = generate_theory(input_text)
+    theory = generate_theory(keywords)
     papers = get_arxiv_papers(query)
     search_results = get_google_search_results(query)
 
