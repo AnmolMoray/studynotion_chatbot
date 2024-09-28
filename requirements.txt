@@ -9,3 +9,6 @@ nltk
 pydantic
 groq
 lxml>=4.6.3
+pandas
+matplotlib
+seaborn

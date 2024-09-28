@@ -4,7 +4,11 @@ import re
 import nltk
 
 # Ensure punkt_tab is downloaded
-
+import pandas as pd
+import matplotlib.pyplot as plt
+import io
+import base64
+import seaborn as sns
 
 from collections import Counter
 from nltk.corpus import stopwords
@@ -16,6 +20,7 @@ nltk.download('punkt', quiet=True)
 nltk.download('stopwords', quiet=True)
 nltk.download('averaged_perceptron_tagger', quiet=True)
 from app.config import client as groq_client
+from lxml import etree
 
 try:
     nltk.data.find('tokenizers/punkt_tab/english/')
@@ -128,6 +133,36 @@ def get_google_search_results(query, num_results=5):
     
     return search_results
 
+def keyword_frequency_in_abstract(abstract, keywords):
+    abstract_lower = abstract.lower()
+    return {keyword: abstract_lower.count(keyword.lower()) for keyword in keywords}
+
+def generate_visualization(papers, keywords):
+    data = []
+    for paper in papers:
+        freq = keyword_frequency_in_abstract(paper['Abstract'], keywords)
+        freq['Title'] = paper['Title']
+        data.append(freq)
+    
+    df = pd.DataFrame(data)
+    df = df.set_index('Title')
+    
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(df, annot=True, cmap='YlGnBu', fmt='d')
+    plt.title('Keyword Frequency in Research Paper Abstracts')
+    plt.xlabel('Keywords')
+    plt.ylabel('Research Papers')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    
+    image_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    return f"data:image/png;base64,{image_base64}"
+
 def comprehensive_research(input_text):
     if is_url(input_text):
         content = extract_text_from_url(input_text)
@@ -142,10 +177,12 @@ def comprehensive_research(input_text):
     theory = generate_theory(keywords)
     papers = get_arxiv_papers(query)
     search_results = get_google_search_results(query)
+    visualization = generate_visualization(papers, keywords)
 
     return {
         "keywords": keywords,
         "generated_theory":theory,
         "arxiv_papers": papers,
-        "google_search_results": search_results
+        "google_search_results": search_results,
+        "data_visualization": visualization
     }
