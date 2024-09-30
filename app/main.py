@@ -1,8 +1,20 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from app.utils import comprehensive_research
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
+
 
 class ResearchInput(BaseModel):
     query: str
